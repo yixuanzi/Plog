@@ -65,43 +65,44 @@ def consume_queue_timer(sink_controller, sink_dict,dict_queue):
 
 def run(config_file, debug=False):
 
-    dict_queue = Queue()
+   dict_queue = Queue()
+   
+   conf_dict = read_conf(config_file=config_file).get_conf_dict()
+   
+   log_config_option = conf_dict["log_config"]
+   #init_log_conf(log_config_option=log_config_option)
+   
+   source_module_name = conf_dict["source"]["source_module"]
+   source_module = __import__("plog.source.%s" % source_module_name,fromlist=["plog.source"])
+   source_iter = source_module.source(source_dict=conf_dict["source"]).yield_line()
 
-    conf_dict = read_conf(config_file=config_file).get_conf_dict()
+   channel_module_name = conf_dict["channel"]["channel_module"]
+   channel_module = __import__("plog.channel.%s" % channel_module_name,fromlist=["plog.channel"])
+   channel_controller = channel_module.channel(channel_dict=conf_dict["channel"],
+                                               source_iter=source_iter,
+                                               dict_queue=dict_queue)
 
-    log_config_option = conf_dict["log_config"]
-    #init_log_conf(log_config_option=log_config_option)
+   sink_module_name = conf_dict["sink"]["sink_module"]
+   sink_module = __import__("plog.sink.%s" % sink_module_name,fromlist=["plog.sink"])
 
-    source_module_name = conf_dict["source"]["source_module"]
-    source_module = __import__("plog.source.%s" % source_module_name,fromlist=["plog.source"])
-    source_iter = source_module.source(source_dict=conf_dict["source"]).yield_line()
+   sink_controller = sink_module.sink(sink_dict=conf_dict["sink"])
     
-    channel_module_name = conf_dict["channel"]["channel_module"]
-    channel_module = __import__("plog.channel.%s" % channel_module_name,fromlist=["plog.channel"])
-    channel_controller = channel_module.channel(channel_dict=conf_dict["channel"],
-                                        source_iter=source_iter,
-                                        dict_queue=dict_queue)
 
-    sink_module_name = conf_dict["sink"]["sink_module"]
-    sink_module = __import__("plog.sink.%s" % sink_module_name,fromlist=["plog.sink"])
+   producer = threading.Thread(
+      target=channel_controller.parse_line
+   )
+   '''
+   consumer = threading.Thread(
+      target=consume_queue_timer,
+      args=(sink_controller,conf_dict["sink"],dict_queue)
+   )
+   '''
+   producer.start()
+   #consumer.start()
 
-    sink_controller = sink_module.sink(sink_dict=conf_dict["sink"])
-
-    producer = threading.Thread(
-        target=channel_controller.parse_line
-    )
-
-    consumer = threading.Thread(
-        target=consume_queue_timer,
-        args=(sink_controller,conf_dict["sink"],dict_queue)
-    )
-
-    producer.start()
-    consumer.start()
-
-    while 1:
-        if len(threading.enumerate()) != 3:
-            pid = os.getpid()
-            os.kill(pid, signal.SIGQUIT)
-        else:
-            time.sleep(120)
+   while 1:
+      if len(threading.enumerate()) != 2:
+         pid = os.getpid()
+         os.kill(pid, signal.SIGQUIT)
+      else:
+         time.sleep(5)
