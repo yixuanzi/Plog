@@ -63,9 +63,29 @@ def consume_queue_timer(sink_controller, sink_dict,dict_queue):
             else:
                 time.sleep(sleep_time)
 
+def run_dynamic(conf_dict,channel_controller,sink_controller):
+   dict_queue = Queue()
+   producer = threading.Thread(
+      target=channel_controller.parse_line
+   )
+   
+   consumer = threading.Thread(
+      target=consume_queue_timer,
+      args=(sink_controller,conf_dict["sink"],dict_queue)
+   )
+   
+   producer.start()
+   consumer.start()
+
+   while 1:
+      if len(threading.enumerate()) != 3:
+         pid = os.getpid()
+         os.kill(pid, signal.SIGQUIT)
+      else:
+         time.sleep(5)   
+   
 def run(config_file, debug=False):
 
-   dict_queue = Queue()
    
    conf_dict = read_conf(config_file=config_file).get_conf_dict()
    
@@ -79,30 +99,17 @@ def run(config_file, debug=False):
    channel_module_name = conf_dict["channel"]["channel_module"]
    channel_module = __import__("plog.channel.%s" % channel_module_name,fromlist=["plog.channel"])
    channel_controller = channel_module.channel(channel_dict=conf_dict["channel"],
-                                               source_iter=source_iter,
-                                               dict_queue=dict_queue)
+                                               source_iter=source_iter)
 
    sink_module_name = conf_dict["sink"]["sink_module"]
    sink_module = __import__("plog.sink.%s" % sink_module_name,fromlist=["plog.sink"])
 
    sink_controller = sink_module.sink(sink_dict=conf_dict["sink"])
     
-
-   producer = threading.Thread(
-      target=channel_controller.parse_line
-   )
-   '''
-   consumer = threading.Thread(
-      target=consume_queue_timer,
-      args=(sink_controller,conf_dict["sink"],dict_queue)
-   )
-   '''
-   producer.start()
-   #consumer.start()
-
-   while 1:
-      if len(threading.enumerate()) != 2:
-         pid = os.getpid()
-         os.kill(pid, signal.SIGQUIT)
-      else:
-         time.sleep(5)
+   if conf_dict['system']['model']=='static':
+      result=channel_controller.parse_line()
+      sink_controller.deal_sink(result)
+   elif conf_dict['system']['model']=='dynamic':
+      run_dynamic(conf_dict,channel_controller,sink_controller)
+   else:
+      print "ERROR: have unknow model"
