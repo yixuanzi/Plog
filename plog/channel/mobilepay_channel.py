@@ -6,11 +6,16 @@ import re
 
 class channel(channel_base):
 
-    def __init__(self,channel_dict,source_iter):
+    def __init__(self,channel_dict,source_iter,sink_control):
         self.channel_dict=channel_dict
         self.source_iter=source_iter
+        self.sink_control=sink_control
         self.interval=int(channel_dict['channel_interval'])
-        self.kv=re.compile('(?P<key>"\S+?":"\S*?")')
+        self.kv=re.compile('(?P<key>"\S+?":"\S*?")') 
+        self.threshold_login_nums=int(channel_dict['threshold_login_nums'])
+        self.threshold_none_nums=int(channel_dict['threshold_none_nums'])
+        self.threshold_login_rate=int(channel_dict['threshold_login_rate'])
+        self.threshold_none_rate=int(channel_dict['threshold_none_rate'])
         self.result={"NONE":{}}
       
     
@@ -42,23 +47,20 @@ class channel(channel_base):
                 pdict[k[1:-1]]=v[1:-1]
         return pdict
     
-    def securecheck(self):
-        for key,value in result.iteritems():
-            total=float()
-            for url,numbers in value.iteritems():
-                if key!="NONE" and numbers>threshold_login_nums:
-                    mywaring("%s %s number:%d have abnormal" %(key,url,numbers))
-                elif numbers>threshold_none_nums:
-                    mywaring("%s %s number:%d have abnormal" %(key,url,numbers))
-                total+=numbers
-                
-            if total>100:
-                for url,numbers in value.iteritems():
-                    if key!="NONE" and (numbers/total)>threshold_login_rate:
-                        mywaring("%s %s number:%d total:%f have abnormal" %(key,url,numbers,total))
-                    elif (numbers/total)>threshold_none_rate:
-                        mywaring("%s %s number:%d total:%f have abnormal" %(key,url,numbers,total))    
-      
+    def securecheck(self,key,url):
+        numbers=self.result[key][url]
+        total=float(self.result['key']['sum'])
+        if key!="NONE" and numbers>self.threshold_login_nums:
+            self.sink_control.deal_sink("%s %s number:%d have abnormal" %(key,url,numbers))
+        elif numbers>self.threshold_none_nums:
+            self.sink_control.deal_sink("%s %s number:%d have abnormal" %(key,url,numbers))
+
+        if numbers>100:   
+            if key!="NONE" and (numbers/total)>self.threshold_login_rate:
+                self.sink_control.deal_sink("%s %s number:%d total:%f have abnormal" %(key,url,numbers,total))
+            elif (numbers/total)>self.threshold_none_rate:
+                self.sink_control.deal_sink("%s %s number:%d total:%f have abnormal" %(key,url,numbers,total))
+        
     def add_result(self,value):
         if not value['uid']:
             value['uid']='NONE'
@@ -67,5 +69,7 @@ class channel(channel_base):
        
         if self.result[value['uid']].get(value['url']):
             self.result[value['uid']][value['url']]+=1
+            self.result[value['uid']]['sum']+=1
         else:
             self.result[value['uid']][value['url']]=1
+            self.result[value['uid']]['sum']=1
