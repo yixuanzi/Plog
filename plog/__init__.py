@@ -94,7 +94,7 @@ def run(config_file, debug=False):
    
    source_module_name = conf_dict["source"]["source_module"]
    source_module = __import__("plog.source.%s" % source_module_name,fromlist=["plog.source"])
-   source_iter = source_module.source(source_dict=conf_dict["source"]).yield_line()
+   source_iter = source_module.source(source_dict=conf_dict["source"])
 
    channel_module_name = conf_dict["channel"]["channel_module"]
    channel_module = __import__("plog.channel.%s" % channel_module_name,fromlist=["plog.channel"])
@@ -106,10 +106,4 @@ def run(config_file, debug=False):
 
    sink_controller = sink_module.sink(sink_dict=conf_dict["sink"])
     
-   if conf_dict['system']['model']=='static':
-      result=channel_controller.parse_line()
-      sink_controller.deal_sink(result)
-   elif conf_dict['system']['model']=='dynamic':
-      run_dynamic(conf_dict,channel_controller,sink_controller)
-   else:
-      print "ERROR: have unknow model"
+   channel_controller.act()

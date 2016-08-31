@@ -25,11 +25,11 @@ if __name__ == "__main__":
         sys.exit(1)
     else :
         try:
-            if not os.path.exists(options.config_filename):
+            if not os.path.exists(sys.path[0]+'/conf/'+options.config_filename):
                 print "there is not config file:%s,you should creat_cfg first,refer to https://github.com/CNSRE/Plog" %config_filename
                 sys.exit(1)
             else:
-                config_file = options.config_filename
+                config_file = sys.path[0]+'/conf/'+options.config_filename
         except:
             print "read config error,check it exists or not,refer to https://github.com/CNSRE/Plog"
             sys.exit(1)
