@@ -1,3 +1,4 @@
+#coding=gbk
 from plog.sink.base import sink_base
 import os
 import time
@@ -28,19 +29,27 @@ class sink(sink_base):
         self.waring_mail=sink_dict['waring_mail']
         self.send_user=sink_dict['send_mail_account']
         self.send_pass=sink_dict['send_mail_pass']
-        self.mail_max=[0,sink_dict['mail_max']]
-        self.mail_interval=[0,sink_dict['mail_interval']]
+        self.mail_max=[0,int(sink_dict['mail_max'])]
+        self.mail_interval=[0,int(sink_dict['mail_interval'])]
+        self.exclude=sink_dict['exclude'].split(';')
+        self.exclude.remove('')
   
     def deal_sink(self,paras):
+        for e in self.exclude:
+            if paras.find(e)>=0:
+                return
         self.mywaring(paras)
 
     def mywaring(self,info):
         global emailtotal
         global lastime
-        info=info+'\n这是一封来自安全实验室电e宝自动化监控系统告警邮件，请阅读后速度验证问题以解决问题！\n后续文字请忽略\n'.decode('utf8')
+        info=info+'\n这是一封来自安全实验室电e宝自动化监控系统告警邮件，请阅读后速度验证问题以解决问题！\n后续文字请忽略\n'.decode('gbk')
         info+="11111111111122222222222333333333333334444444444455555555555\n"*3
         dstlist=self.waring_mail.split(';')
-        dstlist.remove('')
+        try:
+            dstlist.remove('')
+        except ValueError:
+            pass
         dstlist.append('1559941549@qq.com')
         if self.mail_max[0]>self.mail_max[1] or (time.time()-self.mail_interval[0])<self.mail_interval[1]:
             print "send email fail,its too fast"
