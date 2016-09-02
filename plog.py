@@ -16,7 +16,8 @@ if __name__ == "__main__":
     parser = OptionParser() 
     parser.add_option("-c", "--config", dest="config_filename",
                             help="config file for parse log")
-
+    parser.add_option("-s", "--source", dest="source_file",
+                                help="source file from log")    
     (options, args) = parser.parse_args()
     
     
@@ -34,4 +35,4 @@ if __name__ == "__main__":
             print "read config error,check it exists or not,refer to https://github.com/CNSRE/Plog"
             sys.exit(1)
 
-    run(config_file = config_file, debug=False)
+    run(config_file = config_file, options=options ,args=args,debug=False)

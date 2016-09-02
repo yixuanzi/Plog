@@ -66,7 +66,7 @@ def consume_queue_timer(sink_controller, sink_dict,dict_queue):
 
 
    
-def run(config_file, debug=False):
+def run(config_file,options,args,debug=False):
 
    
    conf_dict = read_conf(config_file=config_file).get_conf_dict()
@@ -74,6 +74,8 @@ def run(config_file, debug=False):
    log_config_option = conf_dict["log_config"]
    #init_log_conf(log_config_option=log_config_option)
    #数据源-过滤-清洗-规则化
+   if conf_dict["source"]["source_file"]=='' and options.source_file:
+      conf_dict["source"]["source_file"]=options.source_file
    source_module_name = conf_dict["source"]["source_module"]
    source_module = __import__("plog.source.%s" % source_module_name,fromlist=["plog.source"])
    source_iter = source_module.source(source_dict=conf_dict["source"])

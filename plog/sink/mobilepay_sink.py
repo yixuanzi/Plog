@@ -54,7 +54,7 @@ class sink(sink_base):
         if self.mail_max[0]>self.mail_max[1] or (time.time()-self.mail_interval[0])<self.mail_interval[1]:
             print "send email fail,its too fast"
             return
-        #if linux_send_mail(info):
+        print info
         if send_mail(dstlist,self.smtp,self.send_user,self.send_pass,"Mobilepay Waring : %s" %time.asctime(),info):
             print "send email succfully"
         self.mail_max[0]+=1

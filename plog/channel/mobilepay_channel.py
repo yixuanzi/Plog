@@ -1,3 +1,4 @@
+#coding=utf8
 from plog.channel.base import channel_base
 from plog.channel.base import channel_base
 import os
@@ -17,10 +18,15 @@ class channel(channel_base):
         self.threshold_login_rate=float(channel_dict['threshold_login_rate'])
         self.threshold_none_rate=float(channel_dict['threshold_none_rate'])
         self.result={"NONE":{}}
-      
+        self.startdate=time.strftime('%Y-%m-%d',time.localtime(time.time()))
     
     def act(self):
         url=""
+        #等待文件出现
+        while not os.path.isfile(self.source_iter.source_file):
+            time.sleep(5)
+            self.isexit()
+            
         while True:
             dt=self.source_iter.yield_line()
             for d in dt:
@@ -35,7 +41,8 @@ class channel(channel_base):
                         self.add_result({'uid':'','url':url})
                     url=""
             #self.print_result()
-            #break
+            #break      
+            self.isexit()
             time.sleep(self.interval)
      
     
@@ -81,3 +88,8 @@ class channel(channel_base):
         for uid,values in self.result.iteritems():
             for key,num in values.iteritems():
                 print uid,key,num
+    
+    def isexit(self):
+        now=time.strftime('%Y-%m-%d',time.localtime(time.time()))
+        if self.startdate!=now:
+            exit() 
