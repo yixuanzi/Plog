@@ -85,11 +85,16 @@ class channel(channel_base):
         self.securecheck(value['uid'],value['url'])
     
     def print_result(self):
+        f=open("%s/result_%s.log" %(sys.path[0],startdate),'w')
         for uid,values in self.result.iteritems():
             for key,num in values.iteritems():
-                print uid,key,num
+                line="%s\t%s\t%s\t" %(uid,key,nums)
+                print line
+                f.write(line+'\n')
+        f.close()
     
     def isexit(self):
         now=time.strftime('%Y-%m-%d',time.localtime(time.time()))
         if self.startdate!=now:
+            self.print_result()
             exit() 
