@@ -24,7 +24,10 @@ class source(source_base):
             
     def yield_line(self):
         for line in self.getlineiter():
-            line=line.decode('utf8')
+            try:
+                line=line.decode('utf8')
+            except Exception:
+                line="DEBUG: Codeing Error"
             if not line:
                 continue
             m=self.filter_url.match(line)

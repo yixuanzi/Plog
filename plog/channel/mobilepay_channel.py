@@ -4,6 +4,7 @@ from plog.channel.base import channel_base
 import os
 import time
 import re
+import sys
 
 class channel(channel_base):
 
@@ -19,7 +20,7 @@ class channel(channel_base):
         self.threshold_none_rate=float(channel_dict['threshold_none_rate'])
         self.result={"NONE":{}}
         self.startdate=time.strftime('%Y-%m-%d',time.localtime(time.time()))
-        self.lastplan=time.time()
+        self.lastplan=0
     
     def act(self):
         url=""
@@ -87,10 +88,10 @@ class channel(channel_base):
         self.securecheck(value['uid'],value['url'])
     
     def print_result(self):
-        f=open("%s/result_%s.log" %(sys.path[0],startdate),'a+')
+        f=open("%s/result_%s.log" %(sys.path[0],self.startdate),'a+')
         for uid,values in self.result.iteritems():
             for key,num in values.iteritems():
-                line="%s\t%s\t%s\t" %(uid,key,nums)
+                line="%s\t%s\t%s\t" %(uid,key,num)
                 print line
                 f.write(line+'\n')
         f.write('=======================================\n')
@@ -106,5 +107,5 @@ class channel(channel_base):
         now=time.time()
         if now-self.lastplan>3600:
             self.print_result()
-            lastime=now        
+            self.lastplan=now        
         
