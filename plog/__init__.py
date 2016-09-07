@@ -74,7 +74,7 @@ def run(config_file,options,args,debug=False):
    log_config_option = conf_dict["log_config"]
    #init_log_conf(log_config_option=log_config_option)
    #数据源-过滤-清洗-规则化
-   if conf_dict["source"]["source_file"]=='' and options.source_file:
+   if conf_dict["source"]["source_file"]=='' and options.source_file: #若未配置源文件，接受-s参数的输入源文件
       conf_dict["source"]["source_file"]=options.source_file
    source_module_name = conf_dict["source"]["source_module"]
    source_module = __import__("plog.source.%s" % source_module_name,fromlist=["plog.source"])

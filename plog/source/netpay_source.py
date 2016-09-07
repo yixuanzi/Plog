@@ -10,8 +10,7 @@ class source(source_base):
     def __init__(self, source_dict):
         self.source_file = source_dict["source_file"]
         #self.file_inode = 0
-        self.filter_url=re.compile(source_dict['source_filter_url'].decode('gbk'))
-        self.filter_paras=re.compile(source_dict['source_filter_paras'].decode('gbk'))
+        self.filter_regex=re.compile(source_dict['source_regex'].decode('utf8'))
         self.fp=None
         
     def getlineiter(self):
@@ -30,12 +29,8 @@ class source(source_base):
                 line="DEBUG: Codeing Error"
             if not line:
                 continue
-            m=self.filter_url.match(line)
+            m=self.filter_regex.match(line)
             if m:
-                yield m.groupdict()
-                continue
-            m=self.filter_paras.match(line)
-            if m: 
                 yield m.groupdict()
 
                     

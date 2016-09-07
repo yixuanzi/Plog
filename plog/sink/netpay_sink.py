@@ -2,10 +2,11 @@
 from plog.sink.base import sink_base
 import os
 import time
-
+from email.mime.text import MIMEText 
+import smtplib  
 
 def send_mail(to_list,mail_host,mail_user,mail_pass,sub,content):  
-    me="Mobilepay Waring Report:"+"<"+mail_user+">"  
+    me="Netpay Waring Report:"+"<"+mail_user+">"  
     msg = MIMEText(content,_subtype='plain',_charset='utf8')  
     msg['Subject'] = sub  
     msg['From'] = me  

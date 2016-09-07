@@ -13,7 +13,6 @@ class channel(channel_base):
         self.source_iter=source_iter
         self.sink_control=sink_control
         self.interval=int(channel_dict['channel_interval'])
-        self.kv=re.compile('(?P<key>"\w+?":"\S*?")') 
         self.threshold_login_nums=int(channel_dict['threshold_login_nums'])
         self.threshold_none_nums=int(channel_dict['threshold_none_nums'])
         self.threshold_login_rate=float(channel_dict['threshold_login_rate'])
@@ -23,7 +22,6 @@ class channel(channel_base):
         self.lastplan=0
     
     def act(self):
-        url=""
         #等待文件出现
         while not os.path.isfile(self.source_iter.source_file):
             time.sleep(5)
@@ -33,31 +31,13 @@ class channel(channel_base):
             dt=self.source_iter.yield_line()
             for d in dt:
                 #print d
-                if d.has_key('url'):
-                    url=d.get('url')
-                elif d.has_key('paras'):
-                    paras_dict=self.parse_paras(d.get('paras'))
-                    if paras_dict.has_key('USR_ID') and url:
-                        self.add_result({'uid':paras_dict['USR_ID'],'url':url})
-                    elif url:
-                        self.add_result({'uid':'','url':url})
-                    url=""
+                self.add_result(d)
             #self.print_result()
             #break
             self.plantask()
             self.isexit()
             time.sleep(self.interval)
      
-    
-    
-    def parse_paras(self,paras):
-        rs=self.kv.findall(paras)
-        pdict={}
-        if rs:
-            for kv in rs:
-                (k,v)=kv.split(':',1)
-                pdict[k[1:-1]]=v[1:-1]
-        return pdict
     
     def securecheck(self,key,url):
         numbers=self.result[key][url]
@@ -77,7 +57,7 @@ class channel(channel_base):
         if not value['uid']:
             value['uid']='NONE'
         if not self.result.get(value['uid']):
-            self.result[value['uid']]={'sum':0}
+            self.result[value['uid']]={'sum':0,'utp':value['utp']}
        
         if self.result[value['uid']].get(value['url']):
             self.result[value['uid']][value['url']]+=1
