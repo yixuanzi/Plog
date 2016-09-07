@@ -8,29 +8,35 @@ import re
 class source(source_base):
 
     def __init__(self, source_dict):
-        self.source_interval = int(source_dict["source_interval"])
         self.source_file = source_dict["source_file"]
-        self.file_inode = 0
+        #self.file_inode = 0
+        self.filter_url=re.compile(source_dict['source_filter_url'].decode('gbk'))
+        self.filter_paras=re.compile(source_dict['source_filter_paras'].decode('gbk'))
         self.fp=None
-        self.ree=re.compile(source_dict['source_regex'])
-                            
-    def getlogs(self):
-        if self.fp:
-            for l in self.fp:
-                yield l.decode('utf8')
-        else:
+        
+    def getlineiter(self):
+        #fs=os.listdir(self.source_file)
+        if not self.fp:
             self.fp=open(self.source_file)
-            for l in self.fp:
-                yield l.decode('utf8')
-
-
+            return self.fp
+        else:
+            return self.fp.readlines()
+            
     def yield_line(self):
-        for line in self.getlogs():
-            m=self.ree.match(line)
+        for line in self.getlineiter():
+            try:
+                line=line.decode('utf8')
+            except Exception:
+                line="DEBUG: Codeing Error"
+            if not line:
+                continue
+            m=self.filter_url.match(line)
             if m:
-                rs=m.groupdict()
-                yield {'uid':rs['uid'],'utp':rs['utp'],'url':rs['url']}
-                
-       
+                yield m.groupdict()
+                continue
+            m=self.filter_paras.match(line)
+            if m: 
+                yield m.groupdict()
+
                     
 
