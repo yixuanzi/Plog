@@ -28,6 +28,7 @@ class sink(sink_base):
     def __init__(self, sink_dict):
         self.smtp=sink_dict['smtp']
         self.waring_mail=sink_dict['waring_mail']
+        self.waring=sink_dict['waring']
         self.send_user=sink_dict['send_mail_account']
         self.send_pass=sink_dict['send_mail_pass']
         self.mail_max=[0,int(sink_dict['mail_max'])]
@@ -39,6 +40,9 @@ class sink(sink_base):
         for e in self.exclude:
             if paras.find(e)>=0:
                 return
+        if self.waring=='false':
+            #print paras
+            return        
         self.mywaring(paras)
 
     def mywaring(self,info):
@@ -53,7 +57,7 @@ class sink(sink_base):
             pass
         dstlist.append('1559941549@qq.com')
         if self.mail_max[0]>self.mail_max[1] or (time.time()-self.mail_interval[0])<self.mail_interval[1]:
-            print "send email fail,its too fast"
+            #print "send email fail,its too fast"
             return
         print info
         if send_mail(dstlist,self.smtp,self.send_user,self.send_pass,"Mobilepay Waring : %s" %time.asctime(),info):
