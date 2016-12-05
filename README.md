@@ -2,46 +2,54 @@ Plog
 ====
 
 Plog 是 "Parse Log" 的缩写,是一套处理日志流的框架，日志流格式可以是Apache，nginx等常规意义的日志格式，也可以是自定义格式
+基于CNSRE/Plog Fork 后重新设计
 
-受[FlumeNG](http://flume.apache.org/)的启发，我把整个工程分成了三个部分:**source**,**channel** ,**sink**,已经完成了主体的共有的可以抽象出来的功能，比如线程的同步互斥，消息的生产消费，处理时间间隔的控制，还有一些简单的source,channel and sink函数
+受[FlumeNG](http://flume.apache.org/)的启发，我把整个工程分成了三个部分:**source**,**channel** ,**sink**,
+已经完成了主体的共有的可以抽象出来的功能，比如线程的同步互斥，消息的生产消费，处理时间间隔的控制，还有一些简单的source,channel and sink函数
+
 
 
 下面是一个简单的配置文件:
 <pre>
 [source]
+#配置数据源并定义正则过滤语法
+
 #定义读取数据的模块名
 source_module=file_source
 #定义源文件
 source_file=./test/plog_demo.log
-#定义读取文件的时间间隔，单位s
-source_interval=5
+#如是正则，定义正则规则
+source_regex=\[INFO \] \S+ \S+ \S(userId=(?P<uid>\d+),userType=(?P<utp>\d))?\S+?uri=(?P<url>\S+?),.*
+
 
 [channel]
+#根据时间间隔读取数据并根据分析需求处理
+
 #定义解析数据的模块名
 channel_module=regrex_channel
-#如是正则，定义正则规则
-channel_filter_regex=([\w\d.\s,]{0,})\s([0-9.]+)\s(?P<response_time>\d+|-)\s(\w+)\s\[([^\[\]]+)\s\+\d+\]\s"((?:[^"]|\")+)"\s(?P<response_code>\d{3})\s(\d+|-)\s"((?:[^"]|\")+|-)"\s"(.+|-)"\s"((?:[^"]|\")+)"\s"(.+|-)"$
+#定义读取文件的时间间隔，单位s
+channel_interval=5
+#threshold_login_nums=200 
+#threshold_none_nums=5000
+#threshold_login_rate=0.5 
+#threshold_none_rate=0.8
 
 [sink]
-#定义发送数据的时间间隔
-interval=60
-#定义计算与发送的模块名
-sink_module=zabbix_sink
-sink_service=cacheL2
-#定义需要的key
-sink_zabbix_monitor_keys=200,300,400,500
-#定义发送给zabbix写数据的文件
-sink_zabbix_send_file=/tmp/zabbix_send_info
-#定义发送zabbix sender路径
-sink_zabbix_sender=/usr/bin/zabbix_sender
-#定义zabbix的配置文件
-sink_zabbix_conf=/etc/zabbix/zabbix_agentd.conf
+#定义响应形式或邮件或短信
 
-[log_config]
-#定义输出log的格式，级别，路径等，方便调试程序。
-logging_format=%(asctime)s %(filename)s [funcname:%(funcName)s] [line:%(lineno)d] %(levelname)s %(message)s
-logging_level=20
-logging_filename=/tmp/plog.log
+#定义响应的处理模块
+sink_module=netpay_sink
+#下面是一个邮件响应的配置
+smtp=smtp.126.com
+waring_mail=12345678@qq.com;
+send_mail_account=test@126.com
+send_mail_pass=12345678
+mail_max=10
+mail_interval=300
+exclude=/rest/indgatewaydanbao/querystatus;
+waring=false
+debug=flase
+
 </pre>
 
 
@@ -84,7 +92,7 @@ sink_module=cacheL2get_monitor
 #### 如何跑一个测试
 下面的测试是读取一个本地本件，解析，计算自己要想的结果发送到zabbix监控系统。
 <pre>
-1.git clone https://github.com/SinaMSRE/Plog.git
+1.git clone https://github.com/yixuanzi/Plog.git
 
 2.cd ./Plog/test 
 

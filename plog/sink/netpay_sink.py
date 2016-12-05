@@ -1,4 +1,4 @@
-#coding=gbk
+ï»¿#coding=utf8
 from plog.sink.base import sink_base
 import os
 import time
@@ -39,16 +39,13 @@ class sink(sink_base):
     def deal_sink(self,paras):
         for e in self.exclude:
             if paras.find(e)>=0:
-                return
-        if self.waring=='false':
-            #print paras
-            return        
+                return  
         self.mywaring(paras)
 
     def mywaring(self,info):
         global emailtotal
         global lastime
-        info=info+'\nÕâÊÇÒ»·âÀ´×Ô°²È«ÊµÑéÊÒµçe±¦×Ô¶¯»¯¼à¿ØÏµÍ³¸æ¾¯ÓÊ¼ş£¬ÇëÔÄ¶ÁºóËÙ¶ÈÑéÖ¤ÎÊÌâÒÔ½â¾öÎÊÌâ£¡\nºóĞøÎÄ×ÖÇëºöÂÔ\n'.decode('gbk')
+        info=info+'\nè¿™æ˜¯ä¸€å°æ¥è‡ªå®‰å…¨å®éªŒå®¤ç”µeå®è‡ªåŠ¨åŒ–ç›‘æ§ç³»ç»Ÿå‘Šè­¦é‚®ä»¶ï¼Œè¯·é˜…è¯»åé€Ÿåº¦éªŒè¯é—®é¢˜ä»¥è§£å†³é—®é¢˜ï¼\nåç»­æ–‡å­—è¯·å¿½ç•¥\n'.decode('gbk')
         info+="11111111111122222222222333333333333334444444444455555555555\n"*3
         dstlist=self.waring_mail.split(';')
         try:
@@ -60,6 +57,9 @@ class sink(sink_base):
             #print "send email fail,its too fast"
             return
         print info
+        if self.waring=='false':
+            #print paras
+            return              
         if send_mail(dstlist,self.smtp,self.send_user,self.send_pass,"Mobilepay Waring : %s" %time.asctime(),info):
             print "send email succfully"
         self.mail_max[0]+=1

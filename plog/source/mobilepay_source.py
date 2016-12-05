@@ -10,8 +10,8 @@ class source(source_base):
     def __init__(self, source_dict):
         self.source_file = source_dict["source_file"]
         #self.file_inode = 0
-        self.filter_url=re.compile(source_dict['source_filter_url'].decode('gbk'))
-        self.filter_paras=re.compile(source_dict['source_filter_paras'].decode('gbk'))
+        self.filter_url=re.compile(source_dict['source_filter_url'].decode('utf8'))
+        self.filter_paras=re.compile(source_dict['source_filter_paras'].decode('utf8'))
         self.fp=None
         
     def getlineiter(self):

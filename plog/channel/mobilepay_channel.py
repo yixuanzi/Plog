@@ -93,7 +93,10 @@ class channel(channel_base):
             for key,num in values.iteritems():
                 line="%s\t%s\t%s\t" %(uid,key,num)
                 print line
-                f.write(line+'\n')
+                try:
+                    f.write(line+'\n')
+                except Exception:
+                    pass
         f.write('=======================================\n')
         f.close()
     
